@@ -29,11 +29,7 @@ export class OrderProcessorService implements OnModuleInit {
     });
 
     await this.consumer.run({
-      eachMessage: async ({
-        topic,
-        partition,
-        message,
-      }: EachMessagePayload) => {
+      eachMessage: async ({ topic, message }: EachMessagePayload) => {
         try {
           const order = JSON.parse(message.value!.toString()) as Order;
           this.logger.log(`Received order ${order.id} from topic ${topic}`);
