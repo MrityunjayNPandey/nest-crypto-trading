@@ -1,12 +1,6 @@
-import {
-  IsIn,
-  IsInt,
-  IsNumber,
-  IsPositive,
-  Max,
-  Min,
-} from 'class-validator';
-import { CurrencySymbolType, OrderType } from '../order.entity';
+import { IsIn, IsInt, IsNumber, IsPositive, Max, Min } from 'class-validator';
+import { CurrencySymbolType } from 'src/balances/balance.entity';
+import { OrderType } from '../order.entity';
 
 export class CreateOrderDto {
   @IsInt()

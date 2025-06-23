@@ -1,19 +1,15 @@
+import { CurrencySymbolType } from 'src/balances/balance.entity';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum OrderType {
-  buy = 'BUY',
-  sell = 'SELL',
+  buy = 'buy',
+  sell = 'sell',
 }
 
 export enum OrderStatus {
-  open = 'OPEN',
-  closed = 'CLOSED',
-  cancelled = 'CANCELLED',
-}
-
-export enum CurrencySymbolType {
-  btc = 'BTC',
-  eth = 'ETH',
+  open = 'open',
+  closed = 'closed',
+  cancelled = 'cancelled',
 }
 
 @Entity({ name: 'orders' })

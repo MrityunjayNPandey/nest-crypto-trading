@@ -4,7 +4,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Kafka, Producer, ProducerRecord } from 'kafkajs';
+import { Kafka, Partitioners, Producer, ProducerRecord } from 'kafkajs';
 
 @Injectable()
 export class KafkaProducerService
@@ -18,10 +18,31 @@ export class KafkaProducerService
       clientId: this.configService.get<string>('KAFKA_CLIENT_ID'),
       brokers: [this.configService.get<string>('KAFKA_BROKER')!],
     });
-    this.producer = this.kafka.producer();
+    this.producer = this.kafka.producer({
+      createPartitioner: Partitioners.LegacyPartitioner,
+    });
   }
 
   async onModuleInit() {
+    const topic = this.configService.get<string>('KAFKA_TOPIC_ORDERS')!;
+    const admin = this.kafka.admin();
+    await admin.connect();
+
+    const existingTopics = await admin.listTopics();
+    if (!existingTopics.includes(topic)) {
+      await admin.createTopics({
+        topics: [
+          {
+            topic,
+            numPartitions: 1, // adjust as needed
+            replicationFactor: 1,
+          },
+        ],
+      });
+      console.log(`Created Kafka topic: ${topic}`);
+    }
+
+    await admin.disconnect();
     await this.producer.connect();
   }
 
