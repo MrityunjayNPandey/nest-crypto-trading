@@ -6,8 +6,8 @@ export enum OrderType {
 }
 
 export enum OrderStatus {
-  pending = 'PENDING',
-  fulfilled = 'FULFILLED',
+  open = 'OPEN',
+  closed = 'CLOSED',
   cancelled = 'CANCELLED',
 }
 
@@ -36,6 +36,6 @@ export class Order {
   @Column({ type: 'decimal', precision: 36, scale: 18 })
   quantity: number;
 
-  @Column({ type: 'varchar', length: 10, default: OrderStatus.pending })
+  @Column({ type: 'varchar', length: 10, default: OrderStatus.open })
   status: OrderStatus;
 }

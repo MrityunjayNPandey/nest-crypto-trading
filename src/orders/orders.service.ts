@@ -15,7 +15,7 @@ export class OrdersService {
     private readonly configService: ConfigService,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto): Promise<Order> {
+  async create(createOrderDto: CreateOrderDto) {
     // 1. Create a new order entity from the DTO
     const order = this.ordersRepository.create(createOrderDto);
 

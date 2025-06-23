@@ -7,6 +7,7 @@ import { Balance } from './balances/balance.entity';
 import { Order } from './orders/order.entity';
 import { KafkaModule } from './kafka/kafka.module';
 import { OrdersModule } from './orders/orders.module';
+import { BalancesModule } from './balances/balances.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { OrdersModule } from './orders/orders.module';
     }),
     KafkaModule,
     OrdersModule,
+    BalancesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
