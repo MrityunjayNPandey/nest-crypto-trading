@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Balance } from './balances/balance.entity';
 import { Order } from './orders/order.entity';
+import { KafkaModule } from './kafka/kafka.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { Order } from './orders/order.entity';
         encrypt: false, // For local development; use true for Azure SQL or other secure connections
       },
     }),
+    KafkaModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
