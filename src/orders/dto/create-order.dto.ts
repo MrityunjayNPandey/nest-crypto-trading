@@ -5,7 +5,7 @@ import {
   IsPositive,
   Max,
   Min,
-} from '@nestjs/class-validator';
+} from 'class-validator';
 import { CurrencySymbolType, OrderType } from '../order.entity';
 
 export class CreateOrderDto {
