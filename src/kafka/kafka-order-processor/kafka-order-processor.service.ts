@@ -1,18 +1,18 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Consumer, EachMessagePayload, Kafka } from 'kafkajs';
-import { BalancesService } from 'src/balances/balances.service';
+import { OrderProcessorService } from 'src/orders/order-processor/order-processor.service';
 import { Order } from 'src/orders/order.entity';
 
 @Injectable()
-export class OrderProcessorService implements OnModuleInit {
-  private readonly logger = new Logger(OrderProcessorService.name);
+export class KafkaOrderProcessorService implements OnModuleInit {
+  private readonly logger = new Logger(KafkaOrderProcessorService.name);
   private readonly kafka: Kafka;
   private readonly consumer: Consumer;
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly balancesService: BalancesService, // Inject the BalancesService
+    private readonly orderProcessorService: OrderProcessorService, // Inject the OrdersService
   ) {
     this.kafka = new Kafka({
       clientId: this.configService.get<string>('KAFKA_CLIENT_ID'),
@@ -33,7 +33,7 @@ export class OrderProcessorService implements OnModuleInit {
         try {
           const order = JSON.parse(message.value!.toString()) as Order;
           this.logger.log(`Received order ${order.id} from topic ${topic}`);
-          await this.balancesService.processOrder(order);
+          await this.orderProcessorService.processOrder(order);
         } catch (error) {
           this.logger.error(
             `Failed to process message from Kafka: ${error.message}`,

@@ -4,10 +4,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Balance } from './balances/balance.entity';
-import { Order } from './orders/order.entity';
-import { KafkaModule } from './kafka/kafka.module';
-import { OrdersModule } from './orders/orders.module';
 import { BalancesModule } from './balances/balances.module';
+import { KafkaModule } from './kafka/kafka.module';
+import { Order } from './orders/order.entity';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [

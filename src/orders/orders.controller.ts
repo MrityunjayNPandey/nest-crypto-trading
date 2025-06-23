@@ -1,6 +1,6 @@
-import { Controller, Post, Body, ValidationPipe } from '@nestjs/common';
-import { OrdersService } from './orders.service';
+import { Body, Controller, Post, ValidationPipe } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { OrdersService } from './orders.service';
 
 @Controller('orders')
 export class OrdersController {
@@ -8,6 +8,6 @@ export class OrdersController {
 
   @Post()
   create(@Body(new ValidationPipe()) createOrderDto: CreateOrderDto) {
-    return this.ordersService.create(createOrderDto);
+    return this.ordersService.createOrder(createOrderDto);
   }
 }

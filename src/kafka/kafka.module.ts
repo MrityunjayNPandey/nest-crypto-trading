@@ -1,12 +1,12 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { KafkaOrderProcessorService } from 'src/kafka/kafka-order-processor/kafka-order-processor.service';
 import { KafkaProducerService } from 'src/kafka/kafka-producer/kafka-producer.service';
-import { OrderProcessorService } from 'src/kafka/order-processor/order-processor.service';
-import { BalancesModule } from '../balances/balances.module';
+import { OrdersModule } from 'src/orders/orders.module';
 
 @Module({
-  imports: [ConfigModule, BalancesModule], // Import BalancesModule here
-  providers: [KafkaProducerService, OrderProcessorService], // Add OrderProcessorService
+  imports: [ConfigModule, forwardRef(() => OrdersModule)], // Import BalancesModule here
+  providers: [KafkaProducerService, KafkaOrderProcessorService], // Add OrderProcessorService
   exports: [KafkaProducerService],
 })
 export class KafkaModule {}
