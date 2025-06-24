@@ -1,7 +1,7 @@
 import Decimal from 'decimal.js';
 import { CurrencySymbolType } from 'src/balances/balance.entity';
 import { DecimalTransformer } from 'src/helpers/decimalTransformer';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum OrderType {
   buy = 'buy',
@@ -15,6 +15,7 @@ export enum OrderStatus {
 }
 
 @Entity({ name: 'orders' })
+@Index(['orderType', 'currencySymbol', 'price', 'quantity', 'status'])
 export class Order {
   @PrimaryGeneratedColumn()
   id: number;

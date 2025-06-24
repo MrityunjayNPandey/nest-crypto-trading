@@ -1,87 +1,139 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+# Nest Crypto Trading Application
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This project is a NestJS-based cryptocurrency trading application backend. It is designed to handle order processing, manage user balances, and integrate with Kafka for asynchronous communication, simulating a limited real-world trading system. The application leverages TypeORM for database interactions and follows a modular architecture for scalability and maintainability.
 
-## Project setup
+## Project Architecture
 
-```bash
-$ pnpm install
-```
+The application is structured into several modules, each responsible for a specific domain:
 
-## Compile and run the project
+-   **Orders Module**: Manages trading orders, including creation, status updates, and retrieval.
+-   **Balances Module**: Handles user account balances and currency management.
+-   **Order Processor Module**: Contains the core logic for processing trading orders, potentially interacting with external services or internal Kafka queues.
+-   **Kafka Integration**: Utilizes Kafka for asynchronous messaging, specifically for order processing, ensuring high throughput and decoupling of services.
+-   **Helpers**: Contains utility functions and transformers, such as `DecimalTransformer` for handling precise decimal values in the database.
 
-```bash
-# development
-$ pnpm run start
+## Technologies Used
 
-# watch mode
-$ pnpm run start:dev
+-   **NestJS**: A progressive Node.js framework for building efficient, reliable, and scalable server-side applications.
+-   **TypeORM**: An ORM that can run in NodeJS, Browser, Cordova, PhoneGap, Ionic, React Native, NativeScript, Expo, and Electron platforms and can be used with TypeScript and JavaScript (ES5, ES6, ES7, ES8).
+-   **Kafka**: A distributed streaming platform used for building real-time data pipelines and streaming applications.
+-   **Decimal.js**: A JavaScript library for arbitrary-precision decimal arithmetic.
 
-# production mode
-$ pnpm run start:prod
-```
+## Project Setup
 
-## Run tests
+To set up and run the project locally, follow these steps:
 
-```bash
-# unit tests
-$ pnpm run test
+1.  **Clone the repository**:
+    ```bash
+    git clone <repository-url>
+    cd nest-crypto-trading
+    ```
 
-# e2e tests
-$ pnpm run test:e2e
+2.  **Install dependencies**:
+    This project uses `pnpm` as its package manager.
+    ```bash
+    pnpm install
+    ```
 
-# test coverage
-$ pnpm run test:cov
-```
+3.  **Environment Configuration**:
+    Create a `.env` file in the project root directory based on the provided `.env.sample`.
+    ```bash
+    cp .env.sample .env
+    ```
+    Update the `.env` file with your specific database and Kafka configurations:
+
+    ```
+    DB_HOST=127.0.0.1
+    DB_PORT=1433
+    DB_USERNAME=SA
+    DB_PASSWORD=reallyStrongPwd123
+    DB_DATABASE=CryptoTradingDB
+
+    KAFKA_BROKER=127.0.0.1:9092
+    KAFKA_CLIENT_ID=crypto-trading-app
+    KAFKA_TOPIC_ORDERS=orders
+    ```
+    Ensure your database (e.g., SQL Server, PostgreSQL, MySQL as configured in TypeORM) and Kafka broker are running and accessible.
+
+4.  **Database Migrations (if applicable)**:
+    If you have TypeORM migrations, run them to set up your database schema:
+    ```bash
+    # Example: pnpm run typeorm migration:run
+    ```
+    (Note: Specific migration commands might vary based on your `package.json` scripts and TypeORM setup.)
+
+## Compile and Run the Project
+
+-   **Development Mode**:
+    ```bash
+    pnpm run start:dev
+    ```
+    This will start the application in watch mode, recompiling and restarting on file changes.
+
+-   **Production Mode**:
+    ```bash
+    pnpm run start:prod
+    ```
+    This will compile the application for production and start it.
+
+## API Endpoints (Example)
+
+Once the application is running, you can interact with its API. Here are some example endpoints you might find:
+
+-   `POST /orders`: Create a new trading order.
+-   `GET /orders/:id`: Retrieve details of a specific order.
+-   `GET /balances/:userId`: Get the balance for a specific user.
+
+(Note: Please refer to the specific controllers and DTOs in the `src/orders` and `src/balances` modules for exact endpoint paths and request/response structures.)
+
+## Run Tests
+
+-   **Unit Tests**:
+    ```bash
+    pnpm run test
+    ```
+
+-   **End-to-End Tests**:
+    ```bash
+    pnpm run test:e2e
+    ```
+
+-   **Test Coverage**:
+    ```bash
+    pnpm run test:cov
+    ```
 
 ## Deployment
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+For deployment, refer to the official NestJS deployment documentation and consider using tools like NestJS Mau for AWS deployments.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Potential Improvements and Future Work
 
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
-```
+As a senior NestJS engineer, here are some areas for potential improvements:
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+-   **Error Handling**: Implement more robust and centralized error handling, possibly using NestJS exception filters.
+-   **Logging**: Integrate a more advanced logging solution (e.g., Winston, Pino) with structured logging and appropriate log levels.
+-   **Monitoring**: Add health checks, metrics (e.g., Prometheus), and tracing (e.g., OpenTelemetry) for better observability.
+-   **Security**: Enhance security measures, including input validation (using class-validator), authentication (JWT, OAuth), and authorization.
+-   **Performance Optimization**: Profile the application to identify bottlenecks and optimize critical paths, especially in order processing.
+-   **Scalability**: Explore horizontal scaling strategies for Kafka consumers and NestJS instances.
+-   **Documentation**: Generate API documentation using Swagger/OpenAPI.
+-   **Testing**: Expand test coverage, especially for edge cases and integration points with Kafka and the database.
+-   **Configuration Management**: Utilize a more sophisticated configuration management solution for different environments.
+-   **Domain Events**: Further leverage domain events for complex business logic and inter-service communication.
 
 ## Resources
 
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+-   Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
+-   For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
+-   To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
+-   Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
+-   Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
+-   Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
+-   To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
+-   Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
 
 ## Support
 
@@ -89,9 +141,9 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 ## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+-   Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
+-   Website - [https://nestjs.com](https://nestjs.com/)
+-   Twitter - [@nestframework](https://twitter.com/nestframework)
 
 ## License
 

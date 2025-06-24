@@ -34,7 +34,7 @@ export class KafkaProducerService
         topics: [
           {
             topic,
-            numPartitions: 1, // adjust as needed
+            numPartitions: 1,
             replicationFactor: 1,
           },
         ],

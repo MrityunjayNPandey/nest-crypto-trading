@@ -16,7 +16,6 @@ export class OrdersService {
     private readonly dataSource: DataSource,
   ) {}
 
-  //initial data should be added to the order table and also produced on Confluent Kafka.
   async createOrder(createOrderDto: CreateOrderDto): Promise<Order> {
     const queryRunner = this.dataSource.createQueryRunner();
 
@@ -51,6 +50,7 @@ export class OrdersService {
   async fetchOrder(orderArgs: Partial<Order>, entityManager: EntityManager) {
     const order = await entityManager.findOne(Order, {
       where: orderArgs,
+      order: { id: 'ASC' },
       lock: { mode: 'pessimistic_write' },
     });
     return order;
