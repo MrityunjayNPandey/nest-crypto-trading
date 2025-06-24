@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BalancesService } from 'src/balances/balances.service';
+import { KafkaProducerService } from 'src/kafka/kafka-producer/kafka-producer.service';
 import { Order, OrderStatus, OrderType } from 'src/orders/order.entity';
 import { OrdersService } from 'src/orders/orders.service';
 import { DataSource, EntityManager } from 'typeorm';
@@ -12,16 +13,14 @@ export class OrderProcessorService {
     private readonly balancesService: BalancesService, // Inject the BalancesService
     private readonly ordersService: OrdersService, // Inject the OrdersService
     private readonly dataSource: DataSource, // Inject DataSource to use the query runner for transactions
+    private readonly kafkaProducerService: KafkaProducerService,
   ) {}
 
-  private async handleCancelOrderTransaction(
-    order: Order,
-    entityManager: EntityManager,
-  ): Promise<boolean> {
+  private async handleCancelOrder(order: Order) {
     await this.ordersService.updateOrderStatusTransaction(
       order.id,
       OrderStatus.cancelled,
-      entityManager,
+      this.dataSource.manager,
     );
 
     this.logger.log(`Order ${order.id}, cancelled.`);
@@ -90,7 +89,17 @@ export class OrderProcessorService {
       this.logger.log(
         `For order ${sellOrder.id}, seller didn't have enough balance.`,
       );
-      await this.handleCancelOrderTransaction(sellOrder, entityManager);
+
+      // even if the main processing transaction is rolled back, we still want this to be executed
+      // hence not enclosed in the transaction
+      await this.handleCancelOrder(sellOrder);
+
+      //put the buy order into the queue again
+      if (order.orderType === OrderType.buy) {
+        await this.kafkaProducerService.addMessageIntoQueue(
+          JSON.stringify(buyOrder),
+        );
+      }
       return false;
     } else {
       const newBalance = sellerBalance.balance.minus(buyOrder.quantity);

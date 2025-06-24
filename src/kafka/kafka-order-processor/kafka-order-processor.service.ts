@@ -25,7 +25,7 @@ export class KafkaOrderProcessorService implements OnModuleInit {
   async onModuleInit() {
     await this.consumer.connect();
     await this.consumer.subscribe({
-      topic: this.configService.get<string>('KAFKA_TOPIC_ORDERS')!,
+      topic: this.configService.get<string>('KAFKA_TOPIC')!,
     });
 
     await this.consumer.run({

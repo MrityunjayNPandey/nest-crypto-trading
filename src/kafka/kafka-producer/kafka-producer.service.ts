@@ -24,7 +24,7 @@ export class KafkaProducerService
   }
 
   async onModuleInit() {
-    const topic = this.configService.get<string>('KAFKA_TOPIC_ORDERS')!;
+    const topic = this.configService.get<string>('KAFKA_TOPIC')!;
     const admin = this.kafka.admin();
     await admin.connect();
 
@@ -50,7 +50,11 @@ export class KafkaProducerService
     await this.producer.disconnect();
   }
 
-  async produce(record: ProducerRecord) {
+  async addMessageIntoQueue(message: string) {
+    const record: ProducerRecord = {
+      topic: this.configService.get<string>('KAFKA_TOPIC')!,
+      messages: [{ value: message }],
+    };
     await this.producer.send(record);
   }
 }

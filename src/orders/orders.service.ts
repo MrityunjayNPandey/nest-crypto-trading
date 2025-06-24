@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KafkaProducerService } from 'src/kafka/kafka-producer/kafka-producer.service';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { Order, OrderStatus } from './order.entity';
 
@@ -13,41 +13,29 @@ export class OrdersService {
     private readonly ordersRepository: Repository<Order>,
     private readonly kafkaProducerService: KafkaProducerService,
     private readonly configService: ConfigService,
-    private readonly dataSource: DataSource,
   ) {}
 
-  async createOrderTransaction(createOrderDto: CreateOrderDto): Promise<Order> {
-    const queryRunner = this.dataSource.createQueryRunner();
+  async createOrder(createOrderDto: CreateOrderDto): Promise<Order> {
+    const order = this.ordersRepository.create(createOrderDto);
 
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    const entityManager = queryRunner.manager;
+    const savedOrder = await this.ordersRepository.save(order);
 
-    try {
-      const order = this.ordersRepository.create(createOrderDto);
-
-      const savedOrder = await entityManager.save(order);
-
-      /**
-       * NOTE: To do this in a more systematic manner, a separate table should be
-       * created for this event and a cron job should actually push the
-       * event to the Kafka. (Look into: Transactional Outbox Pattern)
-       */
-      await this.kafkaProducerService.produce({
-        topic: this.configService.get<string>('KAFKA_TOPIC_ORDERS')!,
-        messages: [{ value: JSON.stringify(savedOrder) }],
-      });
-      await queryRunner.commitTransaction();
-      return order;
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw err;
-    } finally {
-      await queryRunner.release();
-    }
+    /**
+     * NOTE: To do this in a more systematic manner, this should be done as
+     * a transaction and a separate table should be created for this event
+     * and a cron job should actually push the event to the Kafka.
+     * (Transactional Outbox Pattern)
+     */
+    await this.kafkaProducerService.addMessageIntoQueue(
+      JSON.stringify(savedOrder),
+    );
+    return order;
   }
 
-  async fetchOrderWithLock(orderArgs: Partial<Order>, entityManager: EntityManager) {
+  async fetchOrderWithLock(
+    orderArgs: Partial<Order>,
+    entityManager: EntityManager,
+  ) {
     const order = await entityManager.findOne(Order, {
       where: orderArgs,
       order: { id: 'ASC' },

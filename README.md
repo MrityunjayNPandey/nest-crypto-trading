@@ -57,7 +57,7 @@ To set up and run the project locally, follow these steps:
 
     KAFKA_BROKER=127.0.0.1:9092
     KAFKA_CLIENT_ID=crypto-trading-app
-    KAFKA_TOPIC_ORDERS=orders
+    KAFKA_TOPIC=orders
     ```
 
     Ensure your database MsSQL and Kafka broker are running and accessible.
