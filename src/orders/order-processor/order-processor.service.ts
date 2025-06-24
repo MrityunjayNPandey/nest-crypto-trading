@@ -16,11 +16,14 @@ export class OrderProcessorService {
     private readonly kafkaProducerService: KafkaProducerService,
   ) {}
 
-  private async handleCancelOrder(order: Order) {
+  private async handleCancelOrderTransaction(
+    order: Order,
+    entityManager: EntityManager,
+  ): Promise<boolean> {
     await this.ordersService.updateOrderStatusTransaction(
       order.id,
       OrderStatus.cancelled,
-      this.dataSource.manager,
+      entityManager,
     );
 
     this.logger.log(`Order ${order.id}, cancelled.`);
@@ -68,6 +71,8 @@ export class OrderProcessorService {
       return false;
     }
 
+    this.logger.log(`Order ${buyOrder.id} matched with order ${sellOrder.id}.`);
+
     if (buyOrder.orderType !== OrderType.buy) {
       [buyOrder, sellOrder] = [sellOrder, buyOrder];
     }
@@ -90,9 +95,7 @@ export class OrderProcessorService {
         `For order ${sellOrder.id}, seller didn't have enough balance.`,
       );
 
-      // even if the main processing transaction is rolled back, we still want this to be executed
-      // hence not enclosed in the transaction
-      await this.handleCancelOrder(sellOrder);
+      await this.handleCancelOrderTransaction(sellOrder, entityManager);
 
       //put the buy order into the queue again
       if (order.orderType === OrderType.buy) {
