@@ -116,7 +116,7 @@ export class OrderProcessorService {
 
     if (buyerBalance) {
       /**
-       * if the buyer and the sellar are the same (we wouldn't be able to acquire locks as both are in same transaction),
+       * if the buyer and the seller are the same (we wouldn't be able to acquire locks as both are in same transaction),
        * if we don't add this if block, we'll add an edge case of user being able to generate free money
       */
       if (buyerBalance.id === sellerBalance.id) {
