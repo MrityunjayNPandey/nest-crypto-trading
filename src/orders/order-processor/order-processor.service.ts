@@ -14,11 +14,11 @@ export class OrderProcessorService {
     private readonly dataSource: DataSource, // Inject DataSource to use the query runner for transactions
   ) {}
 
-  private async handleCancelOrder(
+  private async handleCancelOrderTransaction(
     order: Order,
     entityManager: EntityManager,
   ): Promise<boolean> {
-    await this.ordersService.updateOrderStatus(
+    await this.ordersService.updateOrderStatusTransaction(
       order.id,
       OrderStatus.cancelled,
       entityManager,
@@ -29,11 +29,11 @@ export class OrderProcessorService {
     return true;
   }
 
-  private async handleCloseOrder(
+  private async handleCloseOrderTransaction(
     order: Order,
     entityManager: EntityManager,
   ): Promise<boolean> {
-    await this.ordersService.updateOrderStatus(
+    await this.ordersService.updateOrderStatusTransaction(
       order.id,
       OrderStatus.closed,
       entityManager,
@@ -44,14 +44,14 @@ export class OrderProcessorService {
     return true;
   }
 
-  private async handleOrder(
+  private async handleOrderTransaction(
     order: Order,
     entityManager: EntityManager,
   ): Promise<boolean> {
     //fetching both orders for locking
     let [buyOrder, sellOrder] = await Promise.all([
-      this.ordersService.fetchOrder(order, entityManager),
-      this.ordersService.fetchOrder(
+      this.ordersService.fetchOrderWithLock(order, entityManager),
+      this.ordersService.fetchOrderWithLock(
         {
           orderType:
             order.orderType === OrderType.buy ? OrderType.sell : OrderType.buy,
@@ -74,27 +74,27 @@ export class OrderProcessorService {
     }
 
     const [buyerBalance, sellerBalance] = await Promise.all([
-      this.balancesService.fetchUserBalance(
+      this.balancesService.fetchUserBalanceWithLock(
         buyOrder.userId,
         buyOrder.currencySymbol,
         entityManager,
       ),
-      this.balancesService.fetchUserBalance(
+      this.balancesService.fetchUserBalanceWithLock(
         sellOrder.userId,
         sellOrder.currencySymbol,
         entityManager,
       ),
     ]);
 
-    if (!sellerBalance || sellerBalance.balance < buyOrder.quantity) {
+    if (!sellerBalance || sellerBalance.balance.lessThan(buyOrder.quantity)) {
       this.logger.log(
-        `For order ${sellOrder.id}, buyer didn't have enough balance.`,
+        `For order ${sellOrder.id}, seller didn't have enough balance.`,
       );
-      await this.handleCancelOrder(sellOrder, entityManager);
+      await this.handleCancelOrderTransaction(sellOrder, entityManager);
       return false;
     } else {
       const newBalance = sellerBalance.balance.minus(buyOrder.quantity);
-      await this.balancesService.updateUserBalance(
+      await this.balancesService.updateUserBalanceTransaction(
         sellerBalance.id,
         newBalance,
         entityManager,
@@ -103,13 +103,13 @@ export class OrderProcessorService {
 
     if (buyerBalance) {
       const newBalance = buyerBalance.balance.plus(buyOrder.quantity);
-      await this.balancesService.updateUserBalance(
+      await this.balancesService.updateUserBalanceTransaction(
         buyerBalance.id,
         newBalance,
         entityManager,
       );
     } else {
-      await this.balancesService.createUserBalance(
+      await this.balancesService.createUserBalanceTransaction(
         {
           userId: buyOrder.userId,
           currencySymbol: buyOrder.currencySymbol,
@@ -120,14 +120,14 @@ export class OrderProcessorService {
     }
 
     await Promise.all([
-      this.handleCloseOrder(buyOrder, entityManager),
-      this.handleCloseOrder(sellOrder, entityManager),
+      this.handleCloseOrderTransaction(buyOrder, entityManager),
+      this.handleCloseOrderTransaction(sellOrder, entityManager),
     ]);
 
     return true;
   }
 
-  async processOrder(order: Order): Promise<void> {
+  async processOrderTransaction(order: Order): Promise<void> {
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -136,7 +136,10 @@ export class OrderProcessorService {
     const entityManager = queryRunner.manager;
 
     try {
-      const orderProcessed = await this.handleOrder(order, entityManager);
+      const orderProcessed = await this.handleOrderTransaction(
+        order,
+        entityManager,
+      );
 
       await queryRunner.commitTransaction();
       if (orderProcessed) {

@@ -16,7 +16,7 @@ export class OrdersService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async createOrder(createOrderDto: CreateOrderDto): Promise<Order> {
+  async createOrderTransaction(createOrderDto: CreateOrderDto): Promise<Order> {
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -47,7 +47,7 @@ export class OrdersService {
     }
   }
 
-  async fetchOrder(orderArgs: Partial<Order>, entityManager: EntityManager) {
+  async fetchOrderWithLock(orderArgs: Partial<Order>, entityManager: EntityManager) {
     const order = await entityManager.findOne(Order, {
       where: orderArgs,
       order: { id: 'ASC' },
@@ -56,7 +56,7 @@ export class OrdersService {
     return order;
   }
 
-  async updateOrderStatus(
+  async updateOrderStatusTransaction(
     orderId: number,
     status: OrderStatus,
     entityManager: EntityManager,

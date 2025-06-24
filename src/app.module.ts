@@ -23,7 +23,6 @@ import { OrdersModule } from './orders/orders.module';
       database: process.env.DB_DATABASE,
       entities: [Balance, Order],
       synchronize: !!process.env.DB_SYNC, // Recommended: Don't use in production. We already created the tables.
-      migrationsRun: true,
       options: {
         encrypt: false, // For local development; use true for Azure SQL or other secure connections
       },

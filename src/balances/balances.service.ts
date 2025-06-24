@@ -11,7 +11,7 @@ export class BalancesService {
     private readonly balancesRepository: Repository<Balance>,
   ) {}
 
-  async createUserBalance(
+  async createUserBalanceTransaction(
     userBalanceArgs: Partial<Balance>,
     entityManager: EntityManager,
   ): Promise<Balance> {
@@ -25,7 +25,7 @@ export class BalancesService {
     return savedUserBalance;
   }
 
-  async fetchUserBalance(
+  async fetchUserBalanceWithLock(
     userId: number,
     currencySymbol: CurrencySymbolType,
     entityManager: EntityManager,
@@ -37,7 +37,7 @@ export class BalancesService {
     return userBalance;
   }
 
-  async updateUserBalance(
+  async updateUserBalanceTransaction(
     userBalanceId: number,
     balance: Decimal,
     entityManager: EntityManager,

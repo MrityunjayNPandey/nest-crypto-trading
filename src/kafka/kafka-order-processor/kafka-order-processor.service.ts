@@ -33,7 +33,7 @@ export class KafkaOrderProcessorService implements OnModuleInit {
         try {
           const order = JSON.parse(message.value!.toString()) as Order;
           this.logger.log(`Received order ${order.id} from topic ${topic}`);
-          await this.orderProcessorService.processOrder(order);
+          await this.orderProcessorService.processOrderTransaction(order);
         } catch (error) {
           this.logger.error(
             `Failed to process message from Kafka: ${error.message}`,

@@ -8,6 +8,6 @@ export class OrdersController {
 
   @Post()
   create(@Body(new ValidationPipe()) createOrderDto: CreateOrderDto) {
-    return this.ordersService.createOrder(createOrderDto);
+    return this.ordersService.createOrderTransaction(createOrderDto);
   }
 }
