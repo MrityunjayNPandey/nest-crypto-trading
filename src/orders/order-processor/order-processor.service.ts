@@ -115,6 +115,14 @@ export class OrderProcessorService {
     }
 
     if (buyerBalance) {
+      /**
+       * if the buyer and the sellar are the same (we wouldn't be able to acquire locks as both are in same transaction),
+       * if we don't add this if block, we'll add an edge case of user being able to generate free money
+      */
+      if (buyerBalance.id === sellerBalance.id) {
+        buyerBalance.balance = sellerBalance.balance.minus(buyOrder.quantity);
+      }
+
       const newBalance = buyerBalance.balance.plus(buyOrder.quantity);
       await this.balancesService.updateUserBalanceTransaction(
         buyerBalance.id,

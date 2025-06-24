@@ -1,30 +1,27 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { Consumer, EachMessagePayload, Kafka } from 'kafkajs';
+import { Consumer, EachMessagePayload } from 'kafkajs';
+import { KafkaService } from 'src/kafka/kafka.service';
 import { OrderProcessorService } from 'src/orders/order-processor/order-processor.service';
 import { Order } from 'src/orders/order.entity';
 
 @Injectable()
 export class KafkaConsumerService implements OnModuleInit {
   private readonly logger = new Logger(KafkaConsumerService.name);
-  private readonly kafka: Kafka;
   private readonly consumer: Consumer;
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly orderProcessorService: OrderProcessorService,
+    private readonly kafkaService: KafkaService,
   ) {
-    this.kafka = new Kafka({
-      clientId: this.configService.get<string>('KAFKA_CLIENT_ID'),
-      brokers: [this.configService.get<string>('KAFKA_BROKER')!],
+    this.consumer = this.kafkaService.kafka.consumer({
+      groupId: 'crypto-order-processor',
     });
-    this.consumer = this.kafka.consumer({ groupId: 'crypto-order-processor' });
   }
 
   async onModuleInit() {
     await this.consumer.connect();
     await this.consumer.subscribe({
-      topic: this.configService.get<string>('KAFKA_TOPIC')!,
+      topic: this.kafkaService.kafkaTopic,
     });
 
     await this.consumer.run({
