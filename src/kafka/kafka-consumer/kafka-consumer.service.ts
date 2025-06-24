@@ -5,8 +5,8 @@ import { OrderProcessorService } from 'src/orders/order-processor/order-processo
 import { Order } from 'src/orders/order.entity';
 
 @Injectable()
-export class KafkaOrderProcessorService implements OnModuleInit {
-  private readonly logger = new Logger(KafkaOrderProcessorService.name);
+export class KafkaConsumerService implements OnModuleInit {
+  private readonly logger = new Logger(KafkaConsumerService.name);
   private readonly kafka: Kafka;
   private readonly consumer: Consumer;
 
