@@ -165,7 +165,11 @@ export class OrderProcessorService {
         err.stack,
       );
       await queryRunner.rollbackTransaction();
-      // Optionally, you can re-throw the error or handle it
+
+      //put it again into the queue (can use DLQ, however, the error is most probably because of locking)
+      await this.kafkaProducerService.addMessageIntoQueue(
+        JSON.stringify(order),
+      );
     } finally {
       // Release the query runner
       await queryRunner.release();
