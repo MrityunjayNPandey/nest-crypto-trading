@@ -51,7 +51,7 @@ export class OrderProcessorService {
     entityManager: EntityManager,
   ): Promise<boolean> {
     //fetching both orders for locking
-    const [requestedOrder, foundOrder] = await Promise.all([
+    const [requestedOrder, matchedOrder] = await Promise.all([
       this.ordersService.fetchOrderWithLock(order, entityManager),
       this.ordersService.fetchOrderWithLock(
         {
@@ -66,15 +66,24 @@ export class OrderProcessorService {
       ),
     ]);
 
-    if (!requestedOrder || !foundOrder) {
+    if (!requestedOrder) {
+      this.logger.log(`Order ${order.id} already executed.`);
+      return false;
+    }
+
+    if (!matchedOrder) {
       this.logger.log(`Order ${order.id} didn't match with any open orders.`);
       return false;
     }
 
     const buyOrder =
-      requestedOrder.orderType === OrderType.buy ? requestedOrder : foundOrder;
+      requestedOrder.orderType === OrderType.buy
+        ? requestedOrder
+        : matchedOrder;
     const sellOrder =
-      requestedOrder.orderType === OrderType.sell ? requestedOrder : foundOrder;
+      requestedOrder.orderType === OrderType.sell
+        ? requestedOrder
+        : matchedOrder;
 
     this.logger.log(`Order ${buyOrder.id} matched with order ${sellOrder.id}.`);
 
@@ -118,7 +127,7 @@ export class OrderProcessorService {
       /**
        * if the buyer and the seller are the same (we wouldn't be able to acquire locks as both are in same transaction),
        * if we don't add this if block, we'll add an edge case of user being able to generate free money
-      */
+       */
       if (buyerBalance.id === sellerBalance.id) {
         buyerBalance.balance = sellerBalance.balance.minus(buyOrder.quantity);
       }
