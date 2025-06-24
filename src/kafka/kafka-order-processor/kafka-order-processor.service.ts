@@ -12,13 +12,12 @@ export class KafkaOrderProcessorService implements OnModuleInit {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly orderProcessorService: OrderProcessorService, // Inject the OrdersService
+    private readonly orderProcessorService: OrderProcessorService,
   ) {
     this.kafka = new Kafka({
       clientId: this.configService.get<string>('KAFKA_CLIENT_ID'),
       brokers: [this.configService.get<string>('KAFKA_BROKER')!],
     });
-    // Use a different groupId for each consumer instance to ensure all instances get messages
     this.consumer = this.kafka.consumer({ groupId: 'crypto-order-processor' });
   }
 

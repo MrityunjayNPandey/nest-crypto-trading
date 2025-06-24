@@ -10,9 +10,9 @@ export class OrderProcessorService {
   private readonly logger = new Logger(OrderProcessorService.name);
 
   constructor(
-    private readonly balancesService: BalancesService, // Inject the BalancesService
-    private readonly ordersService: OrdersService, // Inject the OrdersService
-    private readonly dataSource: DataSource, // Inject DataSource to use the query runner for transactions
+    private readonly balancesService: BalancesService,
+    private readonly ordersService: OrdersService,
+    private readonly dataSource: DataSource, // DataSource to use the query runner for transactions
     private readonly kafkaProducerService: KafkaProducerService,
   ) {}
 
@@ -51,7 +51,7 @@ export class OrderProcessorService {
     entityManager: EntityManager,
   ): Promise<boolean> {
     //fetching both orders for locking
-    let [buyOrder, sellOrder] = await Promise.all([
+    const [requestedOrder, foundOrder] = await Promise.all([
       this.ordersService.fetchOrderWithLock(order, entityManager),
       this.ordersService.fetchOrderWithLock(
         {
@@ -66,16 +66,17 @@ export class OrderProcessorService {
       ),
     ]);
 
-    if (!buyOrder || !sellOrder) {
+    if (!requestedOrder || !foundOrder) {
       this.logger.log(`Order ${order.id} didn't match with any open orders.`);
       return false;
     }
 
-    this.logger.log(`Order ${buyOrder.id} matched with order ${sellOrder.id}.`);
+    const buyOrder =
+      requestedOrder.orderType === OrderType.buy ? requestedOrder : foundOrder;
+    const sellOrder =
+      requestedOrder.orderType === OrderType.sell ? requestedOrder : foundOrder;
 
-    if (buyOrder.orderType !== OrderType.buy) {
-      [buyOrder, sellOrder] = [sellOrder, buyOrder];
-    }
+    this.logger.log(`Order ${buyOrder.id} matched with order ${sellOrder.id}.`);
 
     const [buyerBalance, sellerBalance] = await Promise.all([
       this.balancesService.fetchUserBalanceWithLock(
@@ -97,7 +98,7 @@ export class OrderProcessorService {
 
       await this.handleCancelOrderTransaction(sellOrder, entityManager);
 
-      //put the buy order into the queue again
+      //put the requested buy order into the queue again
       if (order.orderType === OrderType.buy) {
         await this.kafkaProducerService.addMessageIntoQueue(
           JSON.stringify(buyOrder),

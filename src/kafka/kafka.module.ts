@@ -5,8 +5,8 @@ import { KafkaProducerService } from 'src/kafka/kafka-producer/kafka-producer.se
 import { OrdersModule } from 'src/orders/orders.module';
 
 @Module({
-  imports: [ConfigModule, forwardRef(() => OrdersModule)], // Import BalancesModule here
-  providers: [KafkaProducerService, KafkaOrderProcessorService], // Add OrderProcessorService
+  imports: [ConfigModule, forwardRef(() => OrdersModule)],
+  providers: [KafkaProducerService, KafkaOrderProcessorService],
   exports: [KafkaProducerService],
 })
 export class KafkaModule {}
