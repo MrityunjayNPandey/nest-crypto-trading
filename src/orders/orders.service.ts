@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KafkaProducerService } from 'src/kafka/kafka-producer/kafka-producer.service';
 import { EntityManager, Repository } from 'typeorm';
@@ -12,7 +11,6 @@ export class OrdersService {
     @InjectRepository(Order)
     private readonly ordersRepository: Repository<Order>,
     private readonly kafkaProducerService: KafkaProducerService,
-    private readonly configService: ConfigService,
   ) {}
 
   async createOrder(createOrderDto: CreateOrderDto): Promise<Order> {

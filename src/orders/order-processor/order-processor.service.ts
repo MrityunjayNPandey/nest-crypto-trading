@@ -51,7 +51,7 @@ export class OrderProcessorService {
     entityManager: EntityManager,
   ): Promise<boolean> {
     //fetching both orders for locking
-    const [requestedOrder, matchedOrder] = await Promise.all([
+    const [requestedOrder, matchingOrder] = await Promise.all([
       this.ordersService.fetchOrderWithLock(order, entityManager),
       this.ordersService.fetchOrderWithLock(
         {
@@ -71,7 +71,7 @@ export class OrderProcessorService {
       return false;
     }
 
-    if (!matchedOrder) {
+    if (!matchingOrder) {
       this.logger.log(`Order ${order.id} didn't match with any open orders.`);
       return false;
     }
@@ -79,11 +79,11 @@ export class OrderProcessorService {
     const buyOrder =
       requestedOrder.orderType === OrderType.buy
         ? requestedOrder
-        : matchedOrder;
+        : matchingOrder;
     const sellOrder =
       requestedOrder.orderType === OrderType.sell
         ? requestedOrder
-        : matchedOrder;
+        : matchingOrder;
 
     this.logger.log(`Order ${buyOrder.id} matched with order ${sellOrder.id}.`);
 
